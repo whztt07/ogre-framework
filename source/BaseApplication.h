@@ -3,6 +3,8 @@
 
 namespace Ogre { class Root; class RenderWindow; }
 
+class Window;
+
 class BaseApplication : public Ogre::WindowEventListener, public Ogre::FrameListener
 {
 public:
@@ -12,8 +14,6 @@ public:
 	void run();
 	
 protected:
-	void recreateWindow();
-
 	void windowResized(Ogre::RenderWindow* rw);
 	void windowClosed(Ogre::RenderWindow* rw);
 	
@@ -26,6 +26,6 @@ protected:
 
 	Ogre::Root* mRoot;
 
-	Ogre::RenderWindow* mWindow;
+	Window* mWindow;
 	//Ogre::RenderWindow* mBackgroundWindow;
 };

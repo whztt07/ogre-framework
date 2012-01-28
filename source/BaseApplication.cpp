@@ -1,5 +1,6 @@
 #include "BaseApplication.h"
 #include "PathManager.h"
+#include "Window.h"
 
 #include <OgreRoot.h>
 #include <OgreRenderWindow.h>
@@ -19,26 +20,6 @@ BaseApplication::BaseApplication() :
 BaseApplication::~BaseApplication()
 {
 	
-}
-
-//------------------------------------------------------------------------------//
-
-void BaseApplication::recreateWindow()
-{
-	if (mWindow)
-	{
-		WindowEventUtilities::removeWindowEventListener(mWindow, this);
-		mRoot->getRenderSystem()->destroyRenderWindow(WINDOW_TITLE);
-	}
-	
-	//!todo do not hardcore the window settings
-	NameValuePairList settings;
-	settings.insert(std::make_pair("title", WINDOW_TITLE));
-	settings.insert(std::make_pair("FSAA", "0"));
-	settings.insert(std::make_pair("vsync", "true"));
-
-	mWindow = mRoot->createRenderWindow(WINDOW_TITLE, mWidth, mHeight, false, &settings);
-	WindowEventUtilities::addWindowEventListener(mWindow, this);
 }
 
 //------------------------------------------------------------------------------//
@@ -69,7 +50,9 @@ void BaseApplication::run()
 	wnd->setActive(false);
 
 	// Create the application window
-	recreateWindow();
+	mWindow = new Window();
+	mWindow->mListener = static_cast<WindowEventListener*>(this);
+	mWindow->create();
 	
 	mRoot->addFrameListener(this);
 	
@@ -77,7 +60,7 @@ void BaseApplication::run()
 	mRoot->startRendering();
 	
 	// Shutdown
-	WindowEventUtilities::removeWindowEventListener(mWindow, this);
+	delete mWindow;
 	mRoot->removeFrameListener(this);
 	delete mRoot;
 }
