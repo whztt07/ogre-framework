@@ -1,3 +1,4 @@
+# Change this to your project's name
 set(PROJECT_NAME "ogre-framework")
 
 project(${PROJECT_NAME} CXX C)
@@ -25,21 +26,34 @@ if(WIN32)
 	set(Boost_USE_STATIC_LIBS   ON)
 endif(WIN32)
 
-find_package(Boost COMPONENTS system thread filesystem REQUIRED QUIET)
+# Add the libraries
+
+# Boost
+find_package(Boost COMPONENTS system thread filesystem REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 list(APPEND LIBS ${Boost_LIBRARIES})
 
-find_package(OGRE REQUIRED QUIET)
-include_directories(${OGRE_INCLUDE_DIRS} ${OGRE_Terrain_INCLUDE_DIRS} ${OGRE_Paging_INCLUDE_DIRS} ${OGRE_RTShaderSystem_INCLUDE_DIRS})
+# OGRE
+find_package(OGRE REQUIRED)
 link_directories(${OGRE_LIBRARY_DIRS})
-list(APPEND LIBS ${OGRE_LIBRARIES} ${OGRE_Terrain_LIBRARIES} ${OGRE_Paging_LIBRARIES} ${OGRE_RTShaderSystem_LIBRARIES})
+include_directories(${OGRE_INCLUDE_DIRS})
+list(APPEND LIBS ${OGRE_LIBRARIES})
+foreach(component Terrain Paging RTShaderSystem) # Specify optional components here
+	include_directories(${OGRE_${component}_INCLUDE_DIRS})
+	list(APPEND LIBS  ${OGRE_${component}_LIBRARIES})
+endforeach()
 
-#find_package(MyGUI REQUIRED QUIET)
+# Bullet (defaults to add all libraries - edit the find script cmake/FindBullet.cmake to specify the libraries you need)
+#find_package(Bullet REQUIRED)
+#include_directories(${BULLET_INCLUDE_DIRS})
+#list(APPEND LIBS ${BULLET_LIBRARIES})
+
+# MyGUI
+#find_package(MyGUI REQUIRED)
 #include_directories(${MYGUI_INCLUDE_DIRS})
 #include_directories(${MYGUI_PLATFORM_INCLUDE_DIRS})
 #link_directories(${MYGUI_LIB_DIR})
-
 #IF(MSVC)
 #	list(APPEND LIBS ${MYGUI_LIBRARIES} ${MYGUI_PLATFORM_LIBRARIES})
 #ELSE(MSVC)
@@ -48,30 +62,32 @@ list(APPEND LIBS ${OGRE_LIBRARIES} ${OGRE_Terrain_LIBRARIES} ${OGRE_Paging_LIBRA
 
 #foreach(lib  OIS SDL OGG VorbisFile)    # Simple libraries added in a loop
 foreach(lib  OIS)    # Simple libraries added in a loop
-	find_package(${lib} REQUIRED QUIET)
+	find_package(${lib} REQUIRED)
 	include_directories(${${lib}_INCLUDE_DIRS})
 	list(APPEND LIBS ${${lib}_LIBRARIES})
 endforeach()
 
+# Unix clock_gettime()
 #if(UNIX)
-#	list(APPEND LIBS "rt") # For clock_gettime()
+#	list(APPEND LIBS "rt")
 #endif()
 
 # Search include files from all source sub directories
 include_directories(source)
 
-# Compile our libraries
+# Compile libraries shipped with your sources
 #if (BUILD_GAME OR BUILD_EDITOR)
-#	foreach(ourlib   tinyxml bullet oisb paged-geom)
-#		add_subdirectory(${ourlib})
+#	foreach(ourlib  tinyxml oisb paged-geom)
+#		add_subdirectory(source/${ourlib})
 #		list(APPEND OURLIBS ${ourlib})
 #	endforeach()
 #endif()
 
-file(GLOB FRAMEWORK_SOURCES
+
+file(GLOB PROJECT_SOURCES
 	source/*.cpp
 )
 
-add_executable(${PROJECT_NAME} ${FRAMEWORK_SOURCES})
+add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
 target_link_libraries(${PROJECT_NAME} ${LIBS})
 
