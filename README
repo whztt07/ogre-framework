@@ -1,0 +1,2 @@
+This is a simple CMake build system for a blank OGRE project.
+It also includes code to add the most common libraries used with OGRE to your project (such as OIS, MyGUI, Bullet, Boost)
