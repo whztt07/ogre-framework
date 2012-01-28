@@ -29,7 +29,7 @@ endif(WIN32)
 # Add the libraries
 
 # Boost
-find_package(Boost COMPONENTS system thread filesystem REQUIRED)
+find_package(Boost COMPONENTS system thread filesystem REQUIRED) # Specify the required components
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 list(APPEND LIBS ${Boost_LIBRARIES})
@@ -39,10 +39,11 @@ find_package(OGRE REQUIRED)
 link_directories(${OGRE_LIBRARY_DIRS})
 include_directories(${OGRE_INCLUDE_DIRS})
 list(APPEND LIBS ${OGRE_LIBRARIES})
-foreach(component Terrain Paging RTShaderSystem) # Specify optional components here
-	include_directories(${OGRE_${component}_INCLUDE_DIRS})
-	list(APPEND LIBS  ${OGRE_${component}_LIBRARIES})
-endforeach()
+# Specify optional components here
+#foreach(component Terrain Paging RTShaderSystem) 
+#	include_directories(${OGRE_${component}_INCLUDE_DIRS})
+#	list(APPEND LIBS  ${OGRE_${component}_LIBRARIES})
+#endforeach()
 
 # Bullet (defaults to add all libraries - edit the find script cmake/FindBullet.cmake to specify the libraries you need)
 #find_package(Bullet REQUIRED)
@@ -60,34 +61,27 @@ endforeach()
 #	list(APPEND LIBS ${MYGUI_LIBRARIES} MyGUI.OgrePlatform) #TODO: MyGUI.OgrePlatform is not added by the find script
 #ENDIF(MSVC)
 
-#foreach(lib  OIS SDL OGG VorbisFile)    # Simple libraries added in a loop
-foreach(lib  OIS)    # Simple libraries added in a loop
+# Simple libraries (without optional components) added in a loop
+#foreach(lib  OIS SDL OGG VorbisFile)
+foreach(lib  OIS)
 	find_package(${lib} REQUIRED)
 	include_directories(${${lib}_INCLUDE_DIRS})
 	list(APPEND LIBS ${${lib}_LIBRARIES})
 endforeach()
 
-# Unix clock_gettime()
-#if(UNIX)
-#	list(APPEND LIBS "rt")
-#endif()
+# The project's include directories
+file(GLOB PROJECT_INCLUDES
+	source/
+)
+include_directories(${PROJECT_INCLUDES})
 
-# Search include files from all source sub directories
-include_directories(source)
-
-# Compile libraries shipped with your sources
-#if (BUILD_GAME OR BUILD_EDITOR)
-#	foreach(ourlib  tinyxml oisb paged-geom)
-#		add_subdirectory(source/${ourlib})
-#		list(APPEND OURLIBS ${ourlib})
-#	endforeach()
-#endif()
-
-
+# The project's sources
 file(GLOB PROJECT_SOURCES
 	source/*.cpp
+	source/*/*.cpp
 )
 
+# Now compile the executable
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
 target_link_libraries(${PROJECT_NAME} ${LIBS})
 
