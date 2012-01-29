@@ -22,11 +22,9 @@ public:
 	std::vector< std::pair<size_t, size_t> > mSupportedFullscreenResolutions;
 	
 	Ogre::WindowEventListener* mListener;
+	Ogre::RenderWindow* mRenderWindow;
 
 	void recreate();
 	void destroy();
 	void create();
-	
-private:
-	Ogre::RenderWindow* mWindow;
 };

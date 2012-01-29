@@ -3,7 +3,7 @@
 
 namespace Ogre { class Root; class RenderWindow; }
 
-class Window;
+class Window; class InputManager;
 
 class BaseApplication : public Ogre::WindowEventListener, public Ogre::FrameListener
 {
@@ -25,6 +25,8 @@ protected:
 	bool mShutdown;
 
 	Ogre::Root* mRoot;
+	
+	InputManager* mInputManager;
 
 	Window* mWindow;
 	//Ogre::RenderWindow* mBackgroundWindow;

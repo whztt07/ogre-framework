@@ -9,7 +9,7 @@ using namespace Ogre;
 Window::Window() : 
 	mWidth(0), mHeight(0), // when 0, use highest supported resolution
 	mFullscreen(1), mFSAA(0), mVSync(1),
-	mWindow(0), mWindowTitle("OgreFramework")
+	mRenderWindow(0), mWindowTitle("OgreFramework")
 {
 	// get a list of supported fullscreen resolutions
 	const StringVector& videoModes = Root::getSingleton().getRenderSystem()->getConfigOptions()["Video Mode"].possibleValues;
@@ -45,9 +45,9 @@ void Window::recreate()
 
 void Window::destroy()
 {
-	if (mWindow)
+	if (mRenderWindow)
 	{
-		WindowEventUtilities::removeWindowEventListener(mWindow, mListener);
+		WindowEventUtilities::removeWindowEventListener(mRenderWindow, mListener);
 		Root::getSingleton().getRenderSystem()->destroyRenderWindow(mWindowTitle);
 	}
 }
@@ -68,6 +68,6 @@ void Window::create()
 	settings.insert(std::make_pair("FSAA", StringConverter::toString(mFSAA)));
 	settings.insert(std::make_pair("vsync", mVSync ? "true" : "false"));
 
-	mWindow = Root::getSingleton().createRenderWindow(mWindowTitle, mWidth, mHeight, mFullscreen, &settings);
-	WindowEventUtilities::addWindowEventListener(mWindow, mListener);
+	mRenderWindow = Root::getSingleton().createRenderWindow(mWindowTitle, mWidth, mHeight, mFullscreen, &settings);
+	WindowEventUtilities::addWindowEventListener(mRenderWindow, mListener);
 }

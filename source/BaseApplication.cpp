@@ -1,13 +1,17 @@
 #include "BaseApplication.h"
 #include "PathManager.h"
 #include "Window.h"
+#include "InputManager.h"
 
 #include <OgreRoot.h>
 #include <OgreRenderWindow.h>
+#include <OIS/OIS.h>
 
 #define WINDOW_TITLE "OgreFramework"
 
 using namespace Ogre;
+
+//------------------------------------------------------------------------------//
 
 BaseApplication::BaseApplication() :
 	mWindow(0), mWidth(1024), mHeight(768)
@@ -54,12 +58,17 @@ void BaseApplication::run()
 	mWindow->mListener = static_cast<WindowEventListener*>(this);
 	mWindow->create();
 	
-	mRoot->addFrameListener(this);
+	// Create input system
+	mInputManager = new InputManager();
+	size_t windowID; mWindow->mRenderWindow->getCustomAttribute("WINDOW", &windowID);
+	mInputManager->create(windowID);
 	
 	// Start the rendering loop
+	mRoot->addFrameListener(this);
 	mRoot->startRendering();
 	
 	// Shutdown
+	delete mInputManager;
 	delete mWindow;
 	mRoot->removeFrameListener(this);
 	delete mRoot;
@@ -83,5 +92,26 @@ void BaseApplication::windowClosed(RenderWindow* rw)
 
 bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
+	
+	InputEvent* ev;
+	
+	mInputManager->process();
+	
+	while (true)
+	{
+		ev = mInputManager->pollEvents();
+		
+		if (ev == 0) break;
+				
+		if (ev->eventType == ET_Keyboard)
+		{
+			KeyEvent* kev = static_cast<KeyEvent*>(ev);
+			if (kev->keyCode == OIS::KC_ESCAPE)
+				mShutdown = true;
+		}
+
+		delete ev;
+	}
+	
 	return !mShutdown;
 }
