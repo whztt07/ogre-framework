@@ -30,6 +30,7 @@ InputManager::~InputManager()
 {
 	mShutdownThread = true;
 	mThread->join();
+	delete mThread;
 }
 
 //------------------------------------------------------------------------------//
@@ -53,6 +54,8 @@ void InputManager::destroy()
 		
 		mOIS->destroyInputSystem(mOIS);
 		mOIS = 0;
+		
+		mOISKeyboard = 0; mOISMouse = 0;
 	}
 }
 

@@ -7,8 +7,6 @@
 #include <OgreRenderWindow.h>
 #include <OIS/OIS.h>
 
-#define WINDOW_TITLE "OgreFramework"
-
 using namespace Ogre;
 
 //------------------------------------------------------------------------------//
@@ -53,17 +51,17 @@ void BaseApplication::run()
 	RenderWindow *wnd = mRoot->createRenderWindow("InactiveHidden", 1, 1, false, &params);
 	wnd->setActive(false);
 
+	// Create input system
+	mInputManager = new InputManager();
+
 	// Create the application window
 	mWindow = new Window();
 	mWindow->mListener = static_cast<WindowEventListener*>(this);
+	mWindow->mInputManager = mInputManager;
 	mWindow->create();
-	
-	// Create input system
-	mInputManager = new InputManager();
-	size_t windowID; mWindow->mRenderWindow->getCustomAttribute("WINDOW", &windowID);
-	mInputManager->create(windowID);
-	
+		
 	// Start the rendering loop
+	createScene();
 	mRoot->addFrameListener(this);
 	mRoot->startRendering();
 	
@@ -90,6 +88,14 @@ void BaseApplication::windowClosed(RenderWindow* rw)
 
 //------------------------------------------------------------------------------//
 
+void BaseApplication::recreateWindow()
+{
+	mWindow->recreate();
+	onRenderWindowRecreated();
+}
+
+//------------------------------------------------------------------------------//
+
 bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
 	
@@ -108,6 +114,8 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 			KeyEvent* kev = static_cast<KeyEvent*>(ev);
 			if (kev->keyCode == OIS::KC_ESCAPE)
 				mShutdown = true;
+			else if (kev->keyCode == OIS::KC_R)
+				recreateWindow();
 		}
 
 		delete ev;

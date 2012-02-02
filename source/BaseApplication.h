@@ -17,6 +17,8 @@ protected:
 	void windowResized(Ogre::RenderWindow* rw);
 	void windowClosed(Ogre::RenderWindow* rw);
 	
+	void recreateWindow();
+	
 	size_t mWidth;
 	size_t mHeight;
 	
@@ -29,5 +31,7 @@ protected:
 	InputManager* mInputManager;
 
 	Window* mWindow;
-	//Ogre::RenderWindow* mBackgroundWindow;
+	
+	virtual void createScene() = 0;
+	virtual void onRenderWindowRecreated() = 0;
 };
