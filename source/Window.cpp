@@ -31,8 +31,6 @@ Window::Window() :
 
 Window::~Window()
 {
-	mInputManager->destroy();
-
 	destroy();
 }
 
@@ -48,6 +46,8 @@ void Window::recreate()
 
 void Window::destroy()
 {
+	mInputManager->destroy();
+
 	if (mRenderWindow)
 	{
 		WindowEventUtilities::removeWindowEventListener(mRenderWindow, mListener);
