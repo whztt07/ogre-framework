@@ -66,8 +66,8 @@ void BaseApplication::run()
 	mRoot->startRendering();
 	
 	// Shutdown
-	delete mInputManager;
 	delete mWindow;
+	delete mInputManager;
 	mRoot->removeFrameListener(this);
 	delete mRoot;
 }
