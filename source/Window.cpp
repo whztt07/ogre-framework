@@ -31,8 +31,9 @@ Window::Window() :
 
 Window::~Window()
 {
-	destroy();
 	mInputManager->destroy();
+
+	destroy();
 }
 
 //------------------------------------------------------------------------------//
