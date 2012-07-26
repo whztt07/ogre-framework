@@ -2,6 +2,7 @@
 #include "PathManager.h"
 #include "Window.h"
 #include "InputManager.h"
+#include "HWMouse.h"
 
 #include <OgreRoot.h>
 #include <OgreRenderWindow.h>
@@ -59,6 +60,14 @@ void BaseApplication::run()
 	mWindow->mListener = static_cast<WindowEventListener*>(this);
 	mWindow->mInputManager = mInputManager;
 	mWindow->create();
+	
+	// Bootstrap resources
+	//!todo put the data path into pathmanager (and do not hardcode it)
+	ResourceGroupManager::getSingleton().addResourceLocation("../data", "FileSystem", "General");
+	ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+	
+	// HW cursor
+	mMouse = new HWMouse(mWindow->mID, 0, 0, "cursor.png");
 		
 	// Start the rendering loop
 	createScene();
@@ -66,8 +75,9 @@ void BaseApplication::run()
 	mRoot->startRendering();
 	
 	// Shutdown
-	delete mInputManager;
+	delete mMouse;
 	delete mWindow;
+	delete mInputManager;
 	mRoot->removeFrameListener(this);
 	delete mRoot;
 }
@@ -90,15 +100,18 @@ void BaseApplication::windowClosed(RenderWindow* rw)
 
 void BaseApplication::recreateWindow()
 {
+	delete mMouse;
+	
 	mWindow->recreate();
 	onRenderWindowRecreated();
+	
+	mMouse = new HWMouse(mWindow->mID, 0, 0, "cursor.png");
 }
 
 //------------------------------------------------------------------------------//
 
 bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
-{
-	
+{	
 	InputEvent* ev;
 	
 	mInputManager->process();
@@ -112,10 +125,20 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 		if (ev->eventType == ET_Keyboard)
 		{
 			KeyEvent* kev = static_cast<KeyEvent*>(ev);
-			if (kev->keyCode == OIS::KC_ESCAPE)
-				mShutdown = true;
-			else if (kev->keyCode == OIS::KC_R)
-				recreateWindow();
+			
+			// sample key handlers:
+			// Esc: shutdown
+			// R: recreate window
+			// F: toggle fullscreen
+			if (kev->keyEventType == KeyPressed)
+			{
+				if (kev->keyCode == OIS::KC_ESCAPE)
+					mShutdown = true;
+				else if (kev->keyCode == OIS::KC_R)
+					recreateWindow();
+				else if (kev->keyEventType == KeyPressed && kev->keyCode == OIS::KC_F) {
+					mWindow->mFullscreen = !mWindow->mFullscreen; recreateWindow(); }
+			}
 		}
 
 		delete ev;

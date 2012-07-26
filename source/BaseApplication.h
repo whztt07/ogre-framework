@@ -3,7 +3,7 @@
 
 namespace Ogre { class Root; class RenderWindow; }
 
-class Window; class InputManager;
+class Window; class InputManager; class HWMouse;
 
 class BaseApplication : public Ogre::WindowEventListener, public Ogre::FrameListener
 {
@@ -31,6 +31,8 @@ protected:
 	InputManager* mInputManager;
 
 	Window* mWindow;
+	
+	HWMouse* mMouse;
 	
 	virtual void createScene() = 0;
 	virtual void onRenderWindowRecreated() = 0;

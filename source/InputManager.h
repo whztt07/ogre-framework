@@ -6,6 +6,8 @@
 
 namespace boost { class thread; }
 
+//!todo use actual OIS events instead of these (OIS::MouseEvent and such)
+
 enum KeyEventType
 {
 	KeyPressed, KeyReleased

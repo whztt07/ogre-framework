@@ -73,6 +73,6 @@ void Window::create()
 	mRenderWindow = Root::getSingleton().createRenderWindow(mWindowTitle, mWidth, mHeight, mFullscreen, &settings);
 	WindowEventUtilities::addWindowEventListener(mRenderWindow, mListener);
 	
-	size_t windowID; mRenderWindow->getCustomAttribute("WINDOW", &windowID);
-	mInputManager->create(windowID);
+	mRenderWindow->getCustomAttribute("WINDOW", &mID);
+	mInputManager->create(mID);
 }

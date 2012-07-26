@@ -91,12 +91,14 @@ void InputManager::create(const size_t& windowID)
 	{
 		mOISKeyboard = static_cast<OIS::Keyboard*>(mOIS->createInputObject(OIS::OISKeyboard, true));
 		mOISKeyboard->setEventCallback(this);
+		mOISKeyboard->capture();
 	}
 		
 	if (mOIS->getNumberOfDevices(OIS::OISMouse) > 0)
 	{
 		mOISMouse = static_cast<OIS::Mouse*>(mOIS->createInputObject(OIS::OISMouse, true));
 		mOISMouse->setEventCallback(this);
+		mOISMouse->capture();
 	}
 	//!todo Joysticks
 }

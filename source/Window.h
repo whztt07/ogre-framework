@@ -29,6 +29,8 @@ public:
 	void destroy();
 	void create();
 	
+	size_t mID;
+	
 	// assigned from outside
 	InputManager* mInputManager;
 	Ogre::WindowEventListener* mListener;

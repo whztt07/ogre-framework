@@ -9,7 +9,7 @@ std::string PathManager::ogre_plugin_dir;
 
 void PathManager::init()
 {
-	/// Search for the OGRE plugin folder
+	/// OGRE plugin folder
 	ogre_plugin_dir = "";
 	
 	 // Use environment variable, if present

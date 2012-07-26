@@ -22,9 +22,13 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 # We want the binaries to be easily accessible
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
+# Some platform specifics
 if(WIN32)
 	set(Boost_USE_STATIC_LIBS   ON)
 endif(WIN32)
+if(UNIX)
+	list(APPEND LIBS "X11" "Xcursor")
+endif(UNIX)
 
 # Add the libraries
 
