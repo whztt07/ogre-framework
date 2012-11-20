@@ -5,8 +5,6 @@
 
 #include <sstream>
 
-IMPLEMENT_SINGLETON(InputManager)
-
 //------------------------------------------------------------------------------//
 
 void InputThread(InputManager* manager)

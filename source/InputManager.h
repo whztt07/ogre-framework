@@ -1,6 +1,6 @@
 #include <cstring>
 #include <vector>
-#include "Singleton.h"
+#include <deque>
 
 #include <OIS/OIS.h>
 
@@ -39,11 +39,9 @@ struct KeyEvent : public InputEvent
 	unsigned int text;
 };
 
-class InputManager : public Ogre::Singleton<InputManager>, public OIS::KeyListener, public OIS::MouseListener
+class InputManager : public OIS::KeyListener, public OIS::MouseListener
 {
 public:
-	DECLARE_SINGLETON(InputManager)
-
 	InputManager();
 	~InputManager();
 
