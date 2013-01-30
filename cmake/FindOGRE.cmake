@@ -83,10 +83,10 @@ elseif (UNIX)
   set(OGRE_PREFIX_GUESSES
     /opt/ogre
     /opt/OGRE
-    /usr/lib/ogre
-    /usr/lib/OGRE
-    /usr/local/lib/ogre
-    /usr/local/lib/OGRE
+    /usr/lib${LIB_SUFFIX}/ogre
+    /usr/lib${LIB_SUFFIX}/OGRE
+    /usr/local/lib${LIB_SUFFIX}/ogre
+    /usr/local/lib${LIB_SUFFIX}/OGRE
     $ENV{HOME}/ogre
     $ENV{HOME}/OGRE
   )
@@ -144,7 +144,7 @@ clear_if_changed(OGRE_PREFIX_WATCH ${OGRE_RESET_VARS})
 # try to locate Ogre via pkg-config
 use_pkgconfig(OGRE_PKGC "OGRE${OGRE_LIB_SUFFIX}")
 
-if(NOT OGRE_BUILD_PLATFORM_IPHONE)
+if(NOT OGRE_BUILD_PLATFORM_IPHONE AND APPLE)
   # try to find framework on OSX
   findpkg_framework(OGRE)
 else()
@@ -285,6 +285,7 @@ if (OGRE_STATIC)
         set(OGRE_DEPS_FOUND FALSE)
       else ()
         set(OGRE_LIBRARIES ${OGRE_LIBRARIES} ${Boost_LIBRARIES})
+        set(OGRE_INCLUDE_DIRS ${OGRE_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
       endif ()
     elseif (OGRE_CONFIG_THREAD_PROVIDER EQUAL 2)
       find_package(POCO QUIET)
@@ -292,6 +293,7 @@ if (OGRE_STATIC)
         set(OGRE_DEPS_FOUND FALSE)
       else ()
         set(OGRE_LIBRARIES ${OGRE_LIBRARIES} ${POCO_LIBRARIES})
+        set(OGRE_INCLUDE_DIRS ${OGRE_INCLUDE_DIRS} ${POCO_INCLUDE_DIRS})
       endif ()
     elseif (OGRE_CONFIG_THREAD_PROVIDER EQUAL 3)
       find_package(TBB QUIET)
@@ -299,6 +301,7 @@ if (OGRE_STATIC)
         set(OGRE_DEPS_FOUND FALSE)
       else ()
         set(OGRE_LIBRARIES ${OGRE_LIBRARIES} ${TBB_LIBRARIES})
+        set(OGRE_INCLUDE_DIRS ${OGRE_INCLUDE_DIRS} ${TBB_INCLUDE_DIRS})
       endif ()
     endif ()
   endif ()
@@ -330,51 +333,51 @@ if (NOT OGRE_STATIC)
 endif()
 
 
+#########################################################
+# Find Ogre components
+#########################################################
+
+set(OGRE_COMPONENT_SEARCH_PATH_REL 
+  ${OGRE_LIBRARY_DIR_REL}/..
+  ${OGRE_LIBRARY_DIR_REL}/../..
+  ${OGRE_BIN_SEARCH_PATH}
+)
+set(OGRE_COMPONENT_SEARCH_PATH_DBG
+  ${OGRE_LIBRARY_DIR_DBG}/..
+  ${OGRE_LIBRARY_DIR_DBG}/../..
+  ${OGRE_BIN_SEARCH_PATH}
+)
+
+macro(ogre_find_component COMPONENT HEADER)
+  findpkg_begin(OGRE_${COMPONENT})
+  find_path(OGRE_${COMPONENT}_INCLUDE_DIR NAMES ${HEADER} HINTS ${OGRE_INCLUDE_DIRS} ${OGRE_PREFIX_SOURCE} PATH_SUFFIXES ${COMPONENT} OGRE/${COMPONENT} Components/${COMPONENT}/include)
+  set(OGRE_${COMPONENT}_LIBRARY_NAMES "Ogre${COMPONENT}${OGRE_LIB_SUFFIX}")
+  get_debug_names(OGRE_${COMPONENT}_LIBRARY_NAMES)
+  find_library(OGRE_${COMPONENT}_LIBRARY_REL NAMES ${OGRE_${COMPONENT}_LIBRARY_NAMES} HINTS ${OGRE_LIBRARY_DIR_REL} PATH_SUFFIXES "" "release" "relwithdebinfo" "minsizerel")
+  find_library(OGRE_${COMPONENT}_LIBRARY_DBG NAMES ${OGRE_${COMPONENT}_LIBRARY_NAMES_DBG} HINTS ${OGRE_LIBRARY_DIR_DBG} PATH_SUFFIXES "" "debug")
+  make_library_set(OGRE_${COMPONENT}_LIBRARY)
+  findpkg_finish(OGRE_${COMPONENT})
+  if (OGRE_${COMPONENT}_FOUND)
+    # find binaries
+    if (NOT OGRE_STATIC)
+	  if (WIN32)
+	    find_file(OGRE_${COMPONENT}_BINARY_REL NAMES "Ogre${COMPONENT}.dll" HINTS ${OGRE_COMPONENT_SEARCH_PATH_REL} PATH_SUFFIXES "" bin bin/release bin/relwithdebinfo bin/minsizerel release)
+	    find_file(OGRE_${COMPONENT}_BINARY_DBG NAMES "Ogre${COMPONENT}_d.dll" HINTS ${OGRE_COMPONENT_SEARCH_PATH_DBG} PATH_SUFFIXES "" bin bin/debug debug)
+	  endif()
+	  mark_as_advanced(OGRE_${COMPONENT}_BINARY_REL OGRE_${COMPONENT}_BINARY_DBG)
+    endif()
+  endif()
+endmacro()
 
 # look for Paging component
-component_setvars(OGRE_Paging OGRE)
-findpkg_begin(OGRE_Paging OGRE)
-find_path(OGRE_Paging_INCLUDE_DIR NAMES OgrePaging.h HINTS ${OGRE_INCLUDE_DIRS} ${OGRE_PREFIX_SOURCE} PATH_SUFFIXES Paging OGRE/Paging Components/Paging/include)
-set(OGRE_Paging_LIBRARY_NAMES "OgrePaging${OGRE_LIB_SUFFIX}")
-get_debug_names(OGRE_Paging_LIBRARY_NAMES)
-find_library(OGRE_Paging_LIBRARY_REL NAMES ${OGRE_Paging_LIBRARY_NAMES} HINTS ${OGRE_LIBRARY_DIR_REL} PATH_SUFFIXES "" "release" "relwithdebinfo" "minsizerel")
-find_library(OGRE_Paging_LIBRARY_DBG NAMES ${OGRE_Paging_LIBRARY_NAMES_DBG} HINTS ${OGRE_LIBRARY_DIR_DBG} PATH_SUFFIXES "" "debug")
-set(OGRE_Paging_LIBRARY_FWK ${OGRE_LIBRARY_FWK})
-make_library_set(OGRE_Paging_LIBRARY)
-findpkg_finish(OGRE_Paging)
-
+ogre_find_component(Paging OgrePaging.h)
 # look for Terrain component
-component_setvars(OGRE_Terrain OGRE)
-findpkg_begin(OGRE_Terrain OGRE)
-find_path(OGRE_Terrain_INCLUDE_DIR NAMES OgreTerrain.h HINTS ${OGRE_INCLUDE_DIRS} ${OGRE_PREFIX_SOURCE} PATH_SUFFIXES Terrain OGRE/Terrain Components/Terrain/include)
-set(OGRE_Terrain_LIBRARY_NAMES "OgreTerrain${OGRE_LIB_SUFFIX}")
-get_debug_names(OGRE_Terrain_LIBRARY_NAMES)
-find_library(OGRE_Terrain_LIBRARY_REL NAMES ${OGRE_Terrain_LIBRARY_NAMES} HINTS ${OGRE_LIBRARY_DIR_REL} PATH_SUFFIXES "" "release" "relwithdebinfo" "minsizerel")
-find_library(OGRE_Terrain_LIBRARY_DBG NAMES ${OGRE_Terrain_LIBRARY_NAMES_DBG} HINTS ${OGRE_LIBRARY_DIR_DBG} PATH_SUFFIXES "" "debug")
-make_library_set(OGRE_Terrain_LIBRARY)
-findpkg_finish(OGRE_Terrain)
-
+ogre_find_component(Terrain OgreTerrain.h)
 # look for Property component
-component_setvars(OGRE_Property OGRE)
-findpkg_begin(OGRE_Property)
-find_path(OGRE_Property_INCLUDE_DIR NAMES OgreProperty.h HINTS ${OGRE_INCLUDE_DIRS} ${OGRE_PREFIX_SOURCE} PATH_SUFFIXES Property OGRE/Property Components/Property/include)
-set(OGRE_Property_LIBRARY_NAMES "OgreProperty${OGRE_LIB_SUFFIX}")
-get_debug_names(OGRE_Property_LIBRARY_NAMES)
-find_library(OGRE_Property_LIBRARY_REL NAMES ${OGRE_Property_LIBRARY_NAMES} HINTS ${OGRE_LIBRARY_DIR_REL} PATH_SUFFIXES "" "release" "relwithdebinfo" "minsizerel")
-find_library(OGRE_Property_LIBRARY_DBG NAMES ${OGRE_Property_LIBRARY_NAMES_DBG} HINTS ${OGRE_LIBRARY_DIR_DBG} PATH_SUFFIXES "" "debug")
-make_library_set(OGRE_Property_LIBRARY)
-findpkg_finish(OGRE_Property)
-
+ogre_find_component(Property OgreProperty.h)
 # look for RTShaderSystem component
-component_setvars(OGRE_RTShaderSystem OGRE)
-findpkg_begin(OGRE_RTShaderSystem OGRE)
-find_path(OGRE_RTShaderSystem_INCLUDE_DIR NAMES OgreRTShaderSystem.h HINTS ${OGRE_INCLUDE_DIRS} ${OGRE_PREFIX_SOURCE} PATH_SUFFIXES RTShaderSystem OGRE/RTShaderSystem Components/RTShaderSystem/include)
-set(OGRE_RTShaderSystem_LIBRARY_NAMES "OgreRTShaderSystem${OGRE_LIB_SUFFIX}")
-get_debug_names(OGRE_RTShaderSystem_LIBRARY_NAMES)
-find_library(OGRE_RTShaderSystem_LIBRARY_REL NAMES ${OGRE_RTShaderSystem_LIBRARY_NAMES} HINTS ${OGRE_LIBRARY_DIR_REL} PATH_SUFFIXES "" "release" "relwithdebinfo" "minsizerel")
-find_library(OGRE_RTShaderSystem_LIBRARY_DBG NAMES ${OGRE_RTShaderSystem_LIBRARY_NAMES_DBG} HINTS ${OGRE_LIBRARY_DIR_DBG} PATH_SUFFIXES "" "debug")
-make_library_set(OGRE_RTShaderSystem_LIBRARY)
-findpkg_finish(OGRE_RTShaderSystem)
+ogre_find_component(RTShaderSystem OgreRTShaderSystem.h)
+
 
 #########################################################
 # Find Ogre plugins
@@ -402,10 +405,22 @@ macro(ogre_find_plugin PLUGIN HEADER)
   set(OGRE_${PLUGIN}_LIBRARY_NAMES "${PLUGIN}${OGRE_LIB_SUFFIX}")
   get_debug_names(OGRE_${PLUGIN}_LIBRARY_NAMES)
   set(OGRE_${PLUGIN}_LIBRARY_FWK ${OGRE_LIBRARY_FWK})
+  # Search for release plugins in OGRE dir with version suffix
   find_library(OGRE_${PLUGIN}_LIBRARY_REL NAMES ${OGRE_${PLUGIN}_LIBRARY_NAMES}
-    HINTS ${OGRE_LIBRARY_DIRS} PATH_SUFFIXES "" OGRE opt release release/opt relwithdebinfo relwithdebinfo/opt minsizerel minsizerel/opt)
+    HINTS ${OGRE_LIBRARY_DIRS} PATH_SUFFIXES "" OGRE-${OGRE_VERSION} opt release release/opt relwithdebinfo relwithdebinfo/opt minsizerel minsizerel/opt)
+  if(NOT EXISTS "${OGRE_${PLUGIN}_LIBRARY_REL}")
+    # Search for release plugins in OGRE dir without version suffix
+    find_library(OGRE_${PLUGIN}_LIBRARY_REL NAMES ${OGRE_${PLUGIN}_LIBRARY_NAMES}
+      HINTS ${OGRE_LIBRARY_DIRS} PATH_SUFFIXES "" OGRE opt release release/opt relwithdebinfo relwithdebinfo/opt minsizerel minsizerel/opt)
+  endif()
+  # Search for debug plugins in OGRE dir with version suffix
   find_library(OGRE_${PLUGIN}_LIBRARY_DBG NAMES ${OGRE_${PLUGIN}_LIBRARY_NAMES_DBG}
-    HINTS ${OGRE_LIBRARY_DIRS} PATH_SUFFIXES "" OGRE opt debug debug/opt)
+    HINTS ${OGRE_LIBRARY_DIRS} PATH_SUFFIXES "" OGRE-${OGRE_VERSION} opt debug debug/opt)
+  if(NOT EXISTS "${OGRE_${PLUGIN}_LIBRARY_DBG}")
+    # Search for debug plugins in OGRE dir without version suffix
+    find_library(OGRE_${PLUGIN}_LIBRARY_DBG NAMES ${OGRE_${PLUGIN}_LIBRARY_NAMES_DBG}
+      HINTS ${OGRE_LIBRARY_DIRS} PATH_SUFFIXES "" OGRE opt debug debug/opt)
+  endif()
   make_library_set(OGRE_${PLUGIN}_LIBRARY)
 
   if (OGRE_${PLUGIN}_LIBRARY OR OGRE_${PLUGIN}_INCLUDE_DIR)
@@ -425,7 +440,6 @@ macro(ogre_find_plugin PLUGIN HEADER)
         set(OGRE_PLUGIN_SEARCH_PATH_REL 
           ${OGRE_LIBRARY_DIR_REL}/..
           ${OGRE_LIBRARY_DIR_REL}/../..
-	  ${OGRE_PREFIX}
 		  ${OGRE_BIN_SEARCH_PATH}
         )
         set(OGRE_PLUGIN_SEARCH_PATH_DBG
@@ -439,9 +453,13 @@ macro(ogre_find_plugin PLUGIN HEADER)
           PATH_SUFFIXES "" bin bin/debug debug)
       elseif (UNIX)
         get_filename_component(OGRE_PLUGIN_DIR_TMP ${OGRE_${PLUGIN}_LIBRARY_REL} PATH)
-        set(OGRE_PLUGIN_DIR_REL ${OGRE_PLUGIN_DIR_TMP} CACHE STRING "Ogre plugin dir (release)")
+        # For some reason this fails
+        #set(OGRE_PLUGIN_DIR_REL ${OGRE_PLUGIN_DIR_TMP} CACHE STRING "Ogre plugin dir (release)")
+        set(OGRE_PLUGIN_DIR_REL ${OGRE_PLUGIN_DIR_TMP})
         get_filename_component(OGRE_PLUGIN_DIR_TMP ${OGRE_${PLUGIN}_LIBRARY_DBG} PATH)
-        set(OGRE_PLUGIN_DIR_DBG ${OGRE_PLUGIN_DIR_TMP} CACHE STRING "Ogre plugin dir (debug)")
+        # Same here
+        #set(OGRE_PLUGIN_DIR_DBG ${OGRE_PLUGIN_DIR_TMP} CACHE STRING "Ogre plugin dir (debug)")
+        set(OGRE_PLUGIN_DIR_DBG ${OGRE_PLUGIN_DIR_TMP})
       endif ()
     endif ()
 	

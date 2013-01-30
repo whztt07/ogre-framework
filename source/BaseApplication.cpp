@@ -1,7 +1,4 @@
 #include "BaseApplication.h"
-#include "PathManager.h"
-#include "Window.h"
-#include "InputManager.h"
 
 #include <OgreRoot.h>
 #include <OgreRenderWindow.h>
@@ -9,22 +6,16 @@
 
 using namespace Ogre;
 
-//------------------------------------------------------------------------------//
-
 BaseApplication::BaseApplication() :
-	mWindow(0), mWidth(1024), mHeight(768)
+	mWindow(0), mOISMouse(0), mOISKeyboard(0), mShutdown(false)
 {
 
 }
-
-//------------------------------------------------------------------------------//
 
 BaseApplication::~BaseApplication()
 {
 	
 }
-
-//------------------------------------------------------------------------------//
 
 void BaseApplication::run()
 {	
@@ -37,28 +28,48 @@ void BaseApplication::run()
 	);
 	
 	// Set render system
-	//!todo do not hardcode render system
-	mRoot->loadPlugin(PathManager::ogre_plugin_dir + "/RenderSystem_GL");
+    mRoot->loadPlugin(OGRE_PLUGIN_DIR_REL + std::string("/RenderSystem_GL"));
 	RenderSystem* rs = mRoot->getRenderSystemByName("OpenGL Rendering Subsystem");
 	mRoot->setRenderSystem(rs);
 	
 	// Fire up Ogre::Root
 	mRoot->initialise(false);
 
-	// Create a hidden background window to keep resources
-	NameValuePairList params;
-	params.insert(std::make_pair("hidden", "true"));
-	RenderWindow *wnd = mRoot->createRenderWindow("InactiveHidden", 1, 1, false, &params);
-	wnd->setActive(false);
+	// Create the application window
+	NameValuePairList settings;
+	settings.insert(std::make_pair("title", "OGRE Application"));
+	settings.insert(std::make_pair("FSAA", "0"));
+    settings.insert(std::make_pair("vsync", "false"));
+
+	mWindow = Root::getSingleton().createRenderWindow("OGRE Application", 800, 600, false, &settings);
+	WindowEventUtilities::addWindowEventListener(mWindow, this);
+	
+	size_t windowID;
+	mWindow->getCustomAttribute("WINDOW", &windowID);
 
 	// Create input system
-	mInputManager = new InputManager();
-
-	// Create the application window
-	mWindow = new Window();
-	mWindow->mListener = static_cast<WindowEventListener*>(this);
-	mWindow->mInputManager = mInputManager;
-	mWindow->create();
+	OIS::ParamList pl;
+	std::ostringstream windowHndStr;
+	windowHndStr << windowID;
+	pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
+    #ifdef OIS_LINUX_PLATFORM
+	pl.insert(std::make_pair(std::string("x11_mouse_grab"), std::string("false")));
+	pl.insert(std::make_pair(std::string("x11_mouse_hide"), std::string("false")));
+	pl.insert(std::make_pair(std::string("x11_keyboard_grab"), std::string("false")));
+    pl.insert(std::make_pair(std::string("XAutoRepeatOn"), std::string("true")));
+    #endif
+	mOIS = OIS::InputManager::createInputSystem( pl );
+	// Create devices
+	if (mOIS->getNumberOfDevices(OIS::OISKeyboard) > 0)
+	{
+		mOISKeyboard = static_cast<OIS::Keyboard*>(mOIS->createInputObject(OIS::OISKeyboard, true));
+		mOISKeyboard->setEventCallback(this);
+	}
+	if (mOIS->getNumberOfDevices(OIS::OISMouse) > 0)
+	{
+		mOISMouse = static_cast<OIS::Mouse*>(mOIS->createInputObject(OIS::OISMouse, true));
+		mOISMouse->setEventCallback(this);
+	}
 		
 	// Start the rendering loop
 	createScene();
@@ -66,60 +77,21 @@ void BaseApplication::run()
 	mRoot->startRendering();
 	
 	// Shutdown
-	delete mInputManager;
-	delete mWindow;
+	if (mOISMouse)
+		mOIS->destroyInputObject(mOISMouse);
+	if (mOISKeyboard)
+		mOIS->destroyInputObject(mOISKeyboard);
+	mOIS->destroyInputSystem(mOIS);
 	mRoot->removeFrameListener(this);
 	delete mRoot;
 }
-
-//------------------------------------------------------------------------------//
 
 void BaseApplication::windowResized(RenderWindow* rw)
 {
 	
 }
 
-//------------------------------------------------------------------------------//
-
 void BaseApplication::windowClosed(RenderWindow* rw)
 {
 	mShutdown = true;
-}
-
-//------------------------------------------------------------------------------//
-
-void BaseApplication::recreateWindow()
-{
-	mWindow->recreate();
-	onRenderWindowRecreated();
-}
-
-//------------------------------------------------------------------------------//
-
-bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
-{
-	
-	InputEvent* ev;
-	
-	mInputManager->process();
-	
-	while (true)
-	{
-		ev = mInputManager->pollEvents();
-		
-		if (ev == 0) break;
-				
-		if (ev->eventType == ET_Keyboard)
-		{
-			KeyEvent* kev = static_cast<KeyEvent*>(ev);
-			if (kev->keyCode == OIS::KC_ESCAPE)
-				mShutdown = true;
-			else if (kev->keyCode == OIS::KC_R)
-				recreateWindow();
-		}
-
-		delete ev;
-	}
-	
-	return !mShutdown;
 }

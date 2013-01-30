@@ -10,9 +10,16 @@ public:
 	
 protected:
 	virtual void createScene();
-	virtual void onRenderWindowRecreated();
+
+	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	
 	Ogre::SceneManager* mSceneMgr;
 	Ogre::Viewport* mViewport;
 	Ogre::Camera* mCamera;
+
+	virtual bool mouseMoved(const OIS::MouseEvent&);
+	virtual bool mousePressed(const OIS::MouseEvent&, OIS::MouseButtonID);
+	virtual bool mouseReleased(const OIS::MouseEvent&, OIS::MouseButtonID);
+	virtual bool keyPressed(const OIS::KeyEvent&);
+	virtual bool keyReleased(const OIS::KeyEvent&);
 };

@@ -22,10 +22,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 # We want the binaries to be easily accessible
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
-if(WIN32)
-	set(Boost_USE_STATIC_LIBS   ON)
-endif(WIN32)
-
 # Add the libraries
 
 # Boost
@@ -44,6 +40,9 @@ list(APPEND LIBS ${OGRE_LIBRARIES})
 #	include_directories(${OGRE_${component}_INCLUDE_DIRS})
 #	list(APPEND LIBS  ${OGRE_${component}_LIBRARIES})
 #endforeach()
+
+add_definitions(-DOGRE_PLUGIN_DIR_REL="${OGRE_PLUGIN_DIR_REL}")
+add_definitions(-DOGRE_PLUGIN_DIR_DBG="${OGRE_PLUGIN_DIR_DBG}")
 
 # Bullet (defaults to add all libraries - edit the find script cmake/FindBullet.cmake to specify the libraries you need)
 #find_package(Bullet REQUIRED)
@@ -78,7 +77,6 @@ include_directories(${PROJECT_INCLUDES})
 # The project's sources
 file(GLOB PROJECT_SOURCES
 	source/*.cpp
-	source/*/*.cpp
 )
 
 # Now compile the executable
