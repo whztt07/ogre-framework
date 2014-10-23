@@ -2,7 +2,7 @@
 
 #include <OgreRoot.h>
 #include <OgreRenderWindow.h>
-#include <OIS/OIS.h>
+#include <OIS.h>
 
 using namespace Ogre;
 
